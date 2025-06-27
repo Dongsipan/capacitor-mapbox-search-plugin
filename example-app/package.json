@@ -13,10 +13,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@capacitor/android": "7.4.0",
     "@capacitor/core": "latest",
-    "capacitor-mapbox-search-plugin": "file:..",
-    "@capacitor/ios": "7.0.0",
-    "@capacitor/android": "7.0.0"
+    "@capacitor/geolocation": "7.1.2",
+    "@capacitor/ios": "7.4.0",
+    "capacitor-mapbox-search-plugin": "file:.."
   },
   "devDependencies": {
     "@capacitor/cli": "latest",

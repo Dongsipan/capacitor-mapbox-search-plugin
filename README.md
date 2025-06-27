@@ -14,6 +14,8 @@ npx cap sync
 <docgen-index>
 
 * [`echo(...)`](#echo)
+* [`openMap(...)`](#openmap)
+* [Interfaces](#interfaces)
 
 </docgen-index>
 
@@ -33,5 +35,28 @@ echo(options: { value: string; }) => Promise<{ value: string; }>
 **Returns:** <code>Promise&lt;{ value: string; }&gt;</code>
 
 --------------------
+
+
+### openMap(...)
+
+```typescript
+openMap(options: MapboxOpenOptions) => Promise<void>
+```
+
+| Param         | Type                                                            |
+| ------------- | --------------------------------------------------------------- |
+| **`options`** | <code><a href="#mapboxopenoptions">MapboxOpenOptions</a></code> |
+
+--------------------
+
+
+### Interfaces
+
+
+#### MapboxOpenOptions
+
+| Prop           | Type                                                  |
+| -------------- | ----------------------------------------------------- |
+| **`location`** | <code>{ latitude: number; longitude: number; }</code> |
 
 </docgen-api>

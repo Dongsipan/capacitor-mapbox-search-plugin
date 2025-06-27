@@ -10,7 +10,8 @@ public class CapacitorMapboxSearchPlugin: CAPPlugin, CAPBridgedPlugin {
     public let identifier = "CapacitorMapboxSearchPlugin"
     public let jsName = "CapacitorMapboxSearch"
     public let pluginMethods: [CAPPluginMethod] = [
-        CAPPluginMethod(name: "echo", returnType: CAPPluginReturnPromise)
+        CAPPluginMethod(name: "echo", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "openMap", returnType: CAPPluginReturnPromise)
     ]
     private let implementation = CapacitorMapboxSearch()
 
@@ -20,4 +21,29 @@ public class CapacitorMapboxSearchPlugin: CAPPlugin, CAPBridgedPlugin {
             "value": implementation.echo(value)
         ])
     }
+    
+    @objc func openMap(_ call: CAPPluginCall) {
+        guard let location = call.getObject("location") as? JSObject, 
+              let lat = location["latitude"] as? Double, 
+              let lon = location["longitude"] as? Double else {
+            call.reject("Invalid or missing location parameters")
+            return
+        }
+
+
+            
+            
+        DispatchQueue.main.async {
+            let mapboxVC = CapacitorMapboxSearchViewController()
+            mapboxVC.latitude = lat
+            mapboxVC.longitude = lon
+            let navigationController = UINavigationController(rootViewController: mapboxVC)
+            
+            if let viewController = self.bridge?.viewController {
+                viewController.present(navigationController, animated: true, completion: nil)
+                call.resolve()
+            }
+        }
+    }
 }
+
