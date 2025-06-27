@@ -10,14 +10,17 @@ let package = Package(
             targets: ["CapacitorMapboxSearchPlugin"])
     ],
     dependencies: [
-        .package(url: "https://github.com/ionic-team/capacitor-swift-pm.git", from: "7.0.0")
+        .package(url: "https://github.com/ionic-team/capacitor-swift-pm.git", from: "7.0.0"),
+        .package(url: "https://github.com/mapbox/search-ios.git", from: "2.13.2")
     ],
     targets: [
         .target(
             name: "CapacitorMapboxSearchPlugin",
             dependencies: [
                 .product(name: "Capacitor", package: "capacitor-swift-pm"),
-                .product(name: "Cordova", package: "capacitor-swift-pm")
+                .product(name: "Cordova", package: "capacitor-swift-pm"),
+                .product(name: "MapboxSearch", package: "search-ios"),
+                .product(name: "MapboxSearchUI", package: "search-ios")
             ],
             path: "ios/Sources/CapacitorMapboxSearchPlugin"),
         .testTarget(
