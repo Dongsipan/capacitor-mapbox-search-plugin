@@ -35,8 +35,8 @@ public class CapacitorMapboxSearchPlugin: CAPPlugin, CAPBridgedPlugin {
             
         DispatchQueue.main.async {
             let mapboxVC = CapacitorMapboxSearchViewController()
-            mapboxVC.latitude = lat
-            mapboxVC.longitude = lon
+//            mapboxVC.latitude = lat
+//            mapboxVC.longitude = lon
             let navigationController = UINavigationController(rootViewController: mapboxVC)
             
             if let viewController = self.bridge?.viewController {

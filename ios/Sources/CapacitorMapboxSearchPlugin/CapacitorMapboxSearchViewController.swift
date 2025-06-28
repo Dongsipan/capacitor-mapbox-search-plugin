@@ -8,196 +8,114 @@
 import UIKit
 import CoreLocation
 import MapboxMaps
+import MapboxSearch
+import MapboxSearchUI
 
 final class CapacitorMapboxSearchViewController: UIViewController {
-    private var cancelables = Set<AnyCancelable>()
-    private var locationTrackingCancellation: AnyCancelable?
+    private lazy var searchController = MapboxSearchController(apiType: .searchBox)
 
-    private var mapView: MapView!
-    private lazy var toggleBearingImageButton = UIButton(frame: .zero)
-    private lazy var trackingButton = UIButton(frame: .zero)
-    private lazy var styleToggle = UISegmentedControl(items: Style.allCases.map(\.name))
-    private var style: Style = .standard {
-        didSet {
-            mapView.mapboxMap.styleURI = style.uri
-        }
-    }
-    private var showsBearingImage: Bool = false {
-        didSet {
-            syncPuckAndButton()
-        }
-    }
+    private var mapView = MapView(frame: .zero)
+    lazy var annotationsManager = mapView.annotations.makePointAnnotationManager()
 
-    var latitude: Double = 0.0
-    var longitude: Double = 0.0
-    override public func viewDidLoad() {
+    override func viewDidLoad() {
         super.viewDidLoad()
-        
-        // Set initial camera settings
-        let cameraOptions = CameraOptions(center: CLLocationCoordinate2D(latitude: latitude, longitude: longitude), zoom: 10)
-        let options = MapInitOptions(cameraOptions: cameraOptions, styleURI: style.uri)
 
-        mapView = MapView(frame: view.bounds, mapInitOptions: options)
-        mapView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        mapView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(mapView)
-
-        addStyleToggle()
-
-        // Setup and create button for toggling show bearing image
-        setupToggleShowBearingImageButton()
-        setupLocationButton()
-
-        // Add user position icon to the map with location indicator layer
-        mapView.location.options.puckType = .puck2D()
-        mapView.location.options.puckBearingEnabled = true
-
-        mapView.gestures.delegate = self
-
-        // Update the camera's centerCoordinate when a locationUpdate is received.
-        startTracking()
-    }
-
-    @objc public
-
-    func showHideBearingImage() {
-        showsBearingImage.toggle()
-    }
-
-    func syncPuckAndButton() {
-        // Update puck config
-        let configuration = Puck2DConfiguration.makeDefault(showBearing: showsBearingImage)
-
-        mapView.location.options.puckType = .puck2D(configuration)
-
-        // Update button title
-        let title: String = showsBearingImage ? "Hide bearing image" : "Show bearing image"
-        toggleBearingImageButton.setTitle(title, for: .normal)
-    }
-
-    private func setupToggleShowBearingImageButton() {
-        // Styling
-        toggleBearingImageButton.backgroundColor = .systemBlue
-        toggleBearingImageButton.addTarget(self, action: #selector(showHideBearingImage), for: .touchUpInside)
-        toggleBearingImageButton.setTitleColor(.white, for: .normal)
-        toggleBearingImageButton.layer.cornerRadius = 4
-        toggleBearingImageButton.clipsToBounds = true
-        toggleBearingImageButton.contentEdgeInsets = UIEdgeInsets(top: 8, left: 16, bottom: 8, right: 16)
-
-        toggleBearingImageButton.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(toggleBearingImageButton)
-
-        // Constraints
-        toggleBearingImageButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20.0).isActive = true
-        toggleBearingImageButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20.0).isActive = true
-        toggleBearingImageButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -70.0).isActive = true
-
-        syncPuckAndButton()
-    }
-
-    private func setupLocationButton() {
-        trackingButton.addTarget(self, action: #selector(switchTracking), for: .touchUpInside)
-
-        trackingButton.setImage(UIImage(systemName: "location.fill"), for: .normal)
-
-        let buttonWidth = 44.0
-        trackingButton.translatesAutoresizingMaskIntoConstraints = false
-        trackingButton.backgroundColor = UIColor(white: 0.97, alpha: 1)
-        trackingButton.layer.cornerRadius = buttonWidth/2
-        trackingButton.layer.shadowOffset = CGSize(width: -1, height: 1)
-        trackingButton.layer.shadowColor = UIColor.black.cgColor
-        trackingButton.layer.shadowOpacity = 0.5
-        view.addSubview(trackingButton)
-
         NSLayoutConstraint.activate([
-            trackingButton.trailingAnchor.constraint(equalTo: toggleBearingImageButton.trailingAnchor),
-            trackingButton.bottomAnchor.constraint(equalTo: toggleBearingImageButton.topAnchor, constant: -20),
-            trackingButton.widthAnchor.constraint(equalTo: trackingButton.heightAnchor),
-            trackingButton.widthAnchor.constraint(equalToConstant: buttonWidth)
+            mapView.topAnchor.constraint(equalTo: view.topAnchor),
+            mapView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            mapView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            mapView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
         ])
+
+        // Show user location
+        mapView.location.options.puckType = .puck2D()
+        mapView.viewport.transition(to: mapView.viewport.makeFollowPuckViewportState())
+
+        searchController.delegate = self
+        /// Add MapboxSearchUI above the map
+        let panelController = MapboxPanelController(rootViewController: searchController)
+        addChild(panelController)
+
+        // Enabling jp/ja search options for testing Japanese Address Search.
+        // Setting Japanese into the list of preferred languages is a way to activate it.
+        if Locale.preferredLanguages.contains(where: { $0.contains("zh") }) {
+            searchController.searchOptions = SearchOptions(countries: ["zh"], languages: ["cn"])
+        }
     }
 
-    @objc func switchStyle(sender: UISegmentedControl) {
-        style = Style(rawValue: sender.selectedSegmentIndex) ?? . satelliteStreets
+    let locationManager = CLLocationManager()
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+
+        locationManager.requestWhenInUseAuthorization()
     }
 
-    @objc func switchTracking() {
-        let isTrackingNow = locationTrackingCancellation != nil
-        if isTrackingNow {
-            stopTracking()
+    func showAnnotations(results: [SearchResult], cameraShouldFollow: Bool = true) {
+        annotationsManager.annotations = results.map { result in
+            let coordinate = CLLocationCoordinate2D(latitude: result.coordinate.latitude, longitude: result.coordinate.longitude)
+            var point = PointAnnotation(point: Point(coordinate))
+
+            // Present a detail view upon annotation tap
+            point.tapHandler = { [weak self] _ in
+                return self?.present(result: result) ?? false
+            }
+            return point
+        }
+
+        if cameraShouldFollow {
+            cameraToAnnotations(annotationsManager.annotations)
+        }
+    }
+
+    func cameraToAnnotations(_ annotations: [PointAnnotation]) {
+        if annotations.count == 1, let annotation = annotations.first {
+            mapView.camera.fly(
+                to: .init(center: annotation.point.coordinates, zoom: 15),
+                duration: 0.25,
+                completion: nil
+            )
         } else {
-            startTracking()
+            do {
+                let cameraState = mapView.mapboxMap.cameraState
+                let coordinatesCamera = try mapView.mapboxMap.camera(
+                    for: annotations.map(\.point.coordinates),
+                    camera: CameraOptions(cameraState: cameraState),
+                    coordinatesPadding: UIEdgeInsets(top: 24, left: 24, bottom: 24, right: 24),
+                    maxZoom: nil,
+                    offset: nil
+                )
+
+                mapView.camera.fly(to: coordinatesCamera, duration: 0.25, completion: nil)
+            } catch {
+                _Logger.searchSDK.error(error.localizedDescription)
+            }
         }
     }
 
-    private func startTracking() {
-        locationTrackingCancellation = mapView.location.onLocationChange.observe { [weak mapView] newLocation in
-            guard let location = newLocation.last, let mapView else { return }
-            mapView.camera.ease(
-                to: CameraOptions(center: location.coordinate, zoom: 15),
-                duration: 1.3)
-        }
-
-        trackingButton.setImage(UIImage(systemName: "location.fill"), for: .normal)
-    }
-
-    func stopTracking() {
-        trackingButton.setImage(UIImage(systemName: "location"), for: .normal)
-        locationTrackingCancellation = nil
-    }
-
-    func addStyleToggle() {
-        // Create a UISegmentedControl to toggle between map styles
-        styleToggle.selectedSegmentIndex = style.rawValue
-        styleToggle.addTarget(self, action: #selector(switchStyle(sender:)), for: .valueChanged)
-        styleToggle.translatesAutoresizingMaskIntoConstraints = false
-
-        // set the segmented control as the title view
-        navigationItem.titleView = styleToggle
+    @discardableResult
+    private func present(result: SearchResult) -> Bool {
+        let alert = UIAlertController(title: "搜索结果", message: result.name, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "确定", style: .default))
+        present(alert, animated: true)
+        return true
     }
 }
 
-extension CapacitorMapboxSearchViewController: GestureManagerDelegate {
-    public func gestureManager(_ gestureManager: MapboxMaps.GestureManager, didBegin gestureType: MapboxMaps.GestureType) {
-        stopTracking()
+extension CapacitorMapboxSearchViewController: SearchControllerDelegate {
+    func categorySearchResultsReceived(category: SearchCategory, results: [SearchResult]) {
+        showAnnotations(results: results)
     }
 
-    public func gestureManager(_ gestureManager: MapboxMaps.GestureManager, didEnd gestureType: MapboxMaps.GestureType, willAnimate: Bool) {}
+    /// Show annotation on the map when selecting a result.
+    /// Separately, selecting an annotation will present a detail view.
+    func searchResultSelected(_ searchResult: SearchResult) {
+        showAnnotations(results: [searchResult])
+    }
 
-    public func gestureManager(_ gestureManager: MapboxMaps.GestureManager, didEndAnimatingFor gestureType: MapboxMaps.GestureType) {}
-}
-
-extension CapacitorMapboxSearchViewController {
-    private enum Style: Int, CaseIterable {
-        var name: String {
-            switch self {
-            case .standard:
-                return "Standard"
-            case .light:
-                return "Light"
-            case .satelliteStreets:
-                return "Satellite"
-            case .customUri:
-                return "Custom"
-            }
-        }
-
-        var uri: StyleURI {
-            switch self {
-            case .standard:
-                return .standard
-            case .light:
-                return .light
-            case .satelliteStreets:
-                return .satelliteStreets
-            case .customUri:
-                let localStyleURL = Bundle.main.url(forResource: "blueprint_style", withExtension: "json")!
-                return .init(url: localStyleURL)!
-            }
-        }
-
-        case standard
-        case light
-        case satelliteStreets
-        case customUri
+    func userFavoriteSelected(_ userFavorite: FavoriteRecord) {
+        showAnnotations(results: [userFavorite])
     }
 }
