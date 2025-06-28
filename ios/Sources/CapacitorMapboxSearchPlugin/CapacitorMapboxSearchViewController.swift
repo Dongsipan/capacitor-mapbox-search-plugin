@@ -28,11 +28,10 @@ final class CapacitorMapboxSearchViewController: UIViewController {
         }
     }
 
+    var latitude: Double = 0.0
+    var longitude: Double = 0.0
     override public func viewDidLoad() {
         super.viewDidLoad()
-        
-        var latitude: Double = 0.0
-        var longitude: Double = 0.0
         
         // Set initial camera settings
         let cameraOptions = CameraOptions(center: CLLocationCoordinate2D(latitude: latitude, longitude: longitude), zoom: 10)
@@ -58,9 +57,9 @@ final class CapacitorMapboxSearchViewController: UIViewController {
         startTracking()
     }
 
-    public
+    @objc public
 
-    @objc func showHideBearingImage() {
+    func showHideBearingImage() {
         showsBearingImage.toggle()
     }
 
@@ -157,7 +156,7 @@ final class CapacitorMapboxSearchViewController: UIViewController {
     }
 }
 
-extension ViewController: GestureManagerDelegate {
+extension CapacitorMapboxSearchViewController: GestureManagerDelegate {
     public func gestureManager(_ gestureManager: MapboxMaps.GestureManager, didBegin gestureType: MapboxMaps.GestureType) {
         stopTracking()
     }
@@ -167,7 +166,7 @@ extension ViewController: GestureManagerDelegate {
     public func gestureManager(_ gestureManager: MapboxMaps.GestureManager, didEndAnimatingFor gestureType: MapboxMaps.GestureType) {}
 }
 
-extension ViewController {
+extension CapacitorMapboxSearchViewController {
     private enum Style: Int, CaseIterable {
         var name: String {
             switch self {

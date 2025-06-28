@@ -23,7 +23,7 @@ public class CapacitorMapboxSearchPlugin: CAPPlugin, CAPBridgedPlugin {
     }
     
     @objc func openMap(_ call: CAPPluginCall) {
-        guard let location = call.getObject("location") as? JSObject, 
+        guard let location = call.getObject("location"), 
               let lat = location["latitude"] as? Double, 
               let lon = location["longitude"] as? Double else {
             call.reject("Invalid or missing location parameters")
