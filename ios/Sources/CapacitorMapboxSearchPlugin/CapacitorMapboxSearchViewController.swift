@@ -38,10 +38,12 @@ final class CapacitorMapboxSearchViewController: UIViewController {
         let panelController = MapboxPanelController(rootViewController: searchController)
         addChild(panelController)
 
-        // Enabling jp/ja search options for testing Japanese Address Search.
-        // Setting Japanese into the list of preferred languages is a way to activate it.
-        if Locale.preferredLanguages.contains(where: { $0.contains("zh") }) {
-            searchController.searchOptions = SearchOptions(countries: ["zh"], languages: ["cn"])
+        // Set search options based on device's locale settings
+        if let preferredLanguage = Locale.preferredLanguages.first {
+            let locale = Locale(identifier: preferredLanguage)
+            let languageCode = locale.languageCode ?? "en"
+            let regionCode = locale.regionCode ?? "US"
+            searchController.searchOptions = SearchOptions(countries: [regionCode], languages: [languageCode])
         }
     }
 

@@ -7,6 +7,10 @@ import Capacitor
  */
 @objc(CapacitorMapboxSearchPlugin)
 public class CapacitorMapboxSearchPlugin: CAPPlugin, CAPBridgedPlugin {
+    // 用于存储搜索窗口的引用
+    private var searchWindow: UIWindow?
+
+
     public let identifier = "CapacitorMapboxSearchPlugin"
     public let jsName = "CapacitorMapboxSearch"
     public let pluginMethods: [CAPPluginMethod] = [
@@ -39,10 +43,11 @@ public class CapacitorMapboxSearchPlugin: CAPPlugin, CAPBridgedPlugin {
 //            mapboxVC.longitude = lon
             let navigationController = UINavigationController(rootViewController: mapboxVC)
             
-            if let viewController = self.bridge?.viewController {
-                viewController.present(navigationController, animated: true, completion: nil)
-                call.resolve()
-            }
+            // 创建新窗口并设置为可见
+            self.searchWindow = UIWindow(frame: UIScreen.main.bounds)
+            self.searchWindow?.rootViewController = navigationController
+            self.searchWindow?.makeKeyAndVisible()
+            call.resolve()
         }
     }
 }
