@@ -19,7 +19,15 @@ final class CapacitorMapboxSearchViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
+        // 添加导航栏关闭按钮
+        navigationItem.leftBarButtonItem = UIBarButtonItem(
+            image: UIImage(systemName: "chevron.left"),
+            style: .plain,
+            target: self,
+            action: #selector(closeWindow)
+        )
+        
         mapView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(mapView)
         NSLayoutConstraint.activate([
@@ -55,6 +63,14 @@ final class CapacitorMapboxSearchViewController: UIViewController {
         locationManager.requestWhenInUseAuthorization()
     }
 
+    // 关闭窗口的回调
+    var onDismiss: (() -> Void)?
+    
+    
+    @objc private func closeWindow() {
+        onDismiss?()
+    }
+    
     func showAnnotations(results: [SearchResult], cameraShouldFollow: Bool = true) {
         annotationsManager.annotations = results.map { result in
             let coordinate = CLLocationCoordinate2D(latitude: result.coordinate.latitude, longitude: result.coordinate.longitude)

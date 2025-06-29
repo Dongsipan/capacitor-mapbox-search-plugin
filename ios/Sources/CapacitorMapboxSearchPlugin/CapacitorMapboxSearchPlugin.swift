@@ -41,6 +41,14 @@ public class CapacitorMapboxSearchPlugin: CAPPlugin, CAPBridgedPlugin {
             let mapboxVC = CapacitorMapboxSearchViewController()
 //            mapboxVC.latitude = lat
 //            mapboxVC.longitude = lon
+            // 设置关闭回调
+            mapboxVC.onDismiss = { [weak self] in
+                UIView.animate(withDuration: 0.3, animations: {
+                    self?.searchWindow?.alpha = 0
+                }, completion: { _ in
+                    self?.searchWindow = nil
+                })
+            }
             let navigationController = UINavigationController(rootViewController: mapboxVC)
             
             // 创建新窗口并设置为可见
