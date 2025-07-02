@@ -38,7 +38,7 @@ public class CapacitorMapboxSearchPlugin: CAPPlugin, CAPBridgedPlugin {
             
             
         DispatchQueue.main.async {
-            let mapboxVC = CapacitorMapboxSearchViewController()
+            let mapboxVC = CapacitorPlaceAutocompleteViewController() // CapacitorMapboxSearchViewController()
 //            mapboxVC.latitude = lat
 //            mapboxVC.longitude = lon
             // 设置关闭回调
@@ -50,11 +50,12 @@ public class CapacitorMapboxSearchPlugin: CAPPlugin, CAPBridgedPlugin {
                 })
             }
             let navigationController = UINavigationController(rootViewController: mapboxVC)
+            navigationController.modalPresentationStyle = .fullScreen
             
-            // 创建新窗口并设置为可见
-            self.searchWindow = UIWindow(frame: UIScreen.main.bounds)
-            self.searchWindow?.rootViewController = navigationController
-            self.searchWindow?.makeKeyAndVisible()
+            // 获取当前窗口的根视图控制器并展示新页面
+            if let rootVC = UIApplication.shared.windows.first?.rootViewController {
+                rootVC.present(navigationController, animated: true, completion: nil)
+            }
             call.resolve()
         }
     }
