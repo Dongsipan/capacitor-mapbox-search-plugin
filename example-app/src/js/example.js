@@ -5,7 +5,6 @@ window.testEcho = () => {
   const inputValue = document.getElementById('echoInput').value;
   CapacitorMapboxSearch.echo({ value: inputValue });
 };
-
 window.testMapboxShow = async () => {
   const coordinates = await Geolocation.getCurrentPosition({
     enableHighAccuracy: true,
@@ -20,4 +19,11 @@ window.testMapboxShow = async () => {
       longitude,
     },
   });
+};
+window.openSearchBox = async () => {
+  CapacitorMapboxSearch.openSearchBox();
+};
+
+window.openAutocomplete = async () => {
+  CapacitorMapboxSearch.openAutocomplete();
 };

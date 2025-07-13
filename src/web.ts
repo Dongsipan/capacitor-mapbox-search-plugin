@@ -11,4 +11,12 @@ export class CapacitorMapboxSearchWeb extends WebPlugin implements CapacitorMapb
     console.log(options);
     console.log(`Can't open Mapbox map - Web is not supported.`);
   }
+  async openSearchBox(): Promise<void> {
+    console.log('openSearchBox');
+    console.log(`Can't open Mapbox map - Web is not supported.`);
+  }
+  async openAutocomplete(): Promise<void> {
+    console.log('openAutocomplete');
+    console.log(`Can't open Mapbox map - Web is not supported.`);
+  }
 }

@@ -113,7 +113,6 @@ extension CapacitorPlaceAutocompleteViewController: UISearchBarDelegate {
     
     @objc private func performSearch(_ searchText: String) {
         print("Performing search for: '\(searchText)'")
-        
         placeAutocomplete.suggestions(
             for: searchText,
             proximity: locationManager?.location?.coordinate

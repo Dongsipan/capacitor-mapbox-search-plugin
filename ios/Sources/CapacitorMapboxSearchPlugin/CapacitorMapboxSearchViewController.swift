@@ -22,7 +22,7 @@ final class CapacitorMapboxSearchViewController: UIViewController {
         
         // 创建地图视图
         print("Creating MapView in search view controller...")
-        mapView = MapView(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
+        mapView = MapView(frame: .zero)
         annotationsManager = mapView.annotations.makePointAnnotationManager()
         print("MapView created successfully in search view controller")
         
@@ -53,12 +53,12 @@ final class CapacitorMapboxSearchViewController: UIViewController {
         addChild(panelController)
 
         // Set search options based on device's locale settings
-        if let preferredLanguage = Locale.preferredLanguages.first {
-            let locale = Locale(identifier: preferredLanguage)
-            let languageCode = locale.languageCode ?? "en"
-            let regionCode = locale.regionCode ?? "US"
-            searchController.searchOptions = SearchOptions(countries: [regionCode], languages: [languageCode])
-        }
+//        if let preferredLanguage = Locale.preferredLanguages.first {
+//            let locale = Locale(identifier: preferredLanguage)
+//            let languageCode = locale.languageCode ?? "en"
+//            let regionCode = locale.regionCode ?? "US"
+//            searchController.searchOptions = SearchOptions(countries: [regionCode], languages: [languageCode])
+//        }
     }
 
     let locationManager = CLLocationManager()
@@ -74,20 +74,11 @@ final class CapacitorMapboxSearchViewController: UIViewController {
     
     
     @objc private func closeWindow() {
-        onDismiss?()
+        self.dismiss(animated: true, completion: nil)
     }
     
     func showAnnotations(results: [SearchResult], cameraShouldFollow: Bool = true) {
-        annotationsManager.annotations = results.map { result in
-            let coordinate = CLLocationCoordinate2D(latitude: result.coordinate.latitude, longitude: result.coordinate.longitude)
-            var point = PointAnnotation(point: Point(coordinate))
-
-            // Present a detail view upon annotation tap
-            point.tapHandler = { [weak self] _ in
-                return self?.present(result: result) ?? false
-            }
-            return point
-        }
+        annotationsManager.annotations = results.map { PointAnnotation.pointAnnotation($0) }
 
         if cameraShouldFollow {
             cameraToAnnotations(annotationsManager.annotations)

@@ -15,6 +15,8 @@ npx cap sync
 
 * [`echo(...)`](#echo)
 * [`openMap(...)`](#openmap)
+* [`openSearchBox()`](#opensearchbox)
+* [`openAutocomplete()`](#openautocomplete)
 * [Interfaces](#interfaces)
 
 </docgen-index>
@@ -46,6 +48,24 @@ openMap(options: MapboxOpenOptions) => Promise<void>
 | Param         | Type                                                            |
 | ------------- | --------------------------------------------------------------- |
 | **`options`** | <code><a href="#mapboxopenoptions">MapboxOpenOptions</a></code> |
+
+--------------------
+
+
+### openSearchBox()
+
+```typescript
+openSearchBox() => Promise<void>
+```
+
+--------------------
+
+
+### openAutocomplete()
+
+```typescript
+openAutocomplete() => Promise<void>
+```
 
 --------------------
 

@@ -15,7 +15,9 @@ public class CapacitorMapboxSearchPlugin: CAPPlugin, CAPBridgedPlugin {
     public let jsName = "CapacitorMapboxSearch"
     public let pluginMethods: [CAPPluginMethod] = [
         CAPPluginMethod(name: "echo", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "openMap", returnType: CAPPluginReturnPromise)
+        CAPPluginMethod(name: "openMap", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "openSearchBox", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "openAutocomplete", returnType: CAPPluginReturnPromise)
     ]
     private let implementation = CapacitorMapboxSearch()
     
@@ -59,6 +61,46 @@ public class CapacitorMapboxSearchPlugin: CAPPlugin, CAPBridgedPlugin {
             let mapboxVC = CapacitorPlaceAutocompleteViewController() // CapacitorMapboxSearchViewController()
 //            mapboxVC.latitude = lat
 //            mapboxVC.longitude = lon
+            // 设置关闭回调
+            mapboxVC.onDismiss = { [weak self] in
+                // 清理资源
+                self?.searchWindow = nil
+            }
+            let navigationController = UINavigationController(rootViewController: mapboxVC)
+            navigationController.modalPresentationStyle = .fullScreen
+            
+            // 获取当前窗口的根视图控制器并展示新页面
+            if let rootVC = UIApplication.shared.windows.first?.rootViewController {
+                rootVC.present(navigationController, animated: true, completion: nil)
+            }
+            call.resolve()
+        }
+    }
+
+    @objc func openSearchBox(_ call: CAPPluginCall) {
+        print("openSearchBox")
+        DispatchQueue.main.async {
+            let mapboxVC = CapacitorMapboxSearchViewController()
+            // 设置关闭回调
+            mapboxVC.onDismiss = { [weak self] in
+                // 清理资源
+                self?.searchWindow = nil
+            }
+            let navigationController = UINavigationController(rootViewController: mapboxVC)
+            navigationController.modalPresentationStyle = .fullScreen
+            
+            // 获取当前窗口的根视图控制器并展示新页面
+            if let rootVC = UIApplication.shared.windows.first?.rootViewController {
+                rootVC.present(navigationController, animated: true, completion: nil)
+            }
+            call.resolve()
+        }
+    }
+
+    @objc func openAutocomplete(_ call: CAPPluginCall) {
+        print("openAutocomplete")
+        DispatchQueue.main.async {
+            let mapboxVC = CapacitorPlaceAutocompleteViewController()
             // 设置关闭回调
             mapboxVC.onDismiss = { [weak self] in
                 // 清理资源

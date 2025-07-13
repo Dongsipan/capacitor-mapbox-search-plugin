@@ -3,6 +3,8 @@ export interface CapacitorMapboxSearchPlugin {
     value: string;
   }>;
   openMap(options: MapboxOpenOptions): Promise<void>;
+  openSearchBox(): Promise<void>;
+  openAutocomplete(): Promise<void>;
 }
 
 export interface MapboxOpenOptions {
