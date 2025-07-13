@@ -14,11 +14,17 @@ import MapboxSearchUI
 final class CapacitorMapboxSearchViewController: UIViewController {
     private lazy var searchController = MapboxSearchController(apiType: .searchBox)
 
-    private var mapView = MapView(frame: .zero)
-    lazy var annotationsManager = mapView.annotations.makePointAnnotationManager()
+    private var mapView: MapView!
+    var annotationsManager: PointAnnotationManager!
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        // 创建地图视图
+        print("Creating MapView in search view controller...")
+        mapView = MapView(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
+        annotationsManager = mapView.annotations.makePointAnnotationManager()
+        print("MapView created successfully in search view controller")
         
         // 添加导航栏关闭按钮
         navigationItem.leftBarButtonItem = UIBarButtonItem(

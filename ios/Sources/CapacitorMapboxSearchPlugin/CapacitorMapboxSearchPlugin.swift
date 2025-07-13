@@ -18,6 +18,24 @@ public class CapacitorMapboxSearchPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "openMap", returnType: CAPPluginReturnPromise)
     ]
     private let implementation = CapacitorMapboxSearch()
+    
+    override public func load() {
+        super.load()
+        
+        // 初始化 Mapbox
+        initializeMapbox()
+    }
+    
+    private func initializeMapbox() {
+        print("Initializing Mapbox in plugin...")
+        
+        // 检查访问令牌
+        if let accessToken = Bundle.main.object(forInfoDictionaryKey: "MBXAccessToken") as? String {
+            print("Mapbox access token found in plugin: \(String(accessToken.prefix(10)))...")
+        } else {
+            print("WARNING: No Mapbox access token found in Info.plist")
+        }
+    }
 
     @objc func echo(_ call: CAPPluginCall) {
         let value = call.getString("value") ?? ""
@@ -43,11 +61,8 @@ public class CapacitorMapboxSearchPlugin: CAPPlugin, CAPBridgedPlugin {
 //            mapboxVC.longitude = lon
             // 设置关闭回调
             mapboxVC.onDismiss = { [weak self] in
-                UIView.animate(withDuration: 0.3, animations: {
-                    self?.searchWindow?.alpha = 0
-                }, completion: { _ in
-                    self?.searchWindow = nil
-                })
+                // 清理资源
+                self?.searchWindow = nil
             }
             let navigationController = UINavigationController(rootViewController: mapboxVC)
             navigationController.modalPresentationStyle = .fullScreen
